@@ -1,7 +1,24 @@
 return {
+  { 'akinsho/toggleterm.nvim', version = "*", config = true },
+  {
+    event = "VeryLazy",
+    "terrortylor/nvim-comment"
+  },
+  {
+    "CopilotC-Nvim/CopilotChat.nvim",
+    dependencies = {
+      { "github/copilot.vim" },                       -- or zbirenbaum/copilot.lua
+      { "nvim-lua/plenary.nvim", branch = "master" }, -- for curl, log and async functions
+    },
+  },
+  {
+    "iamcco/markdown-preview.nvim",
+    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+    ft = { "markdown" },
+    build = function() vim.fn["mkdp#util#install"]() end,
+  },
   {
     'Hoffs/omnisharp-extended-lsp.nvim',
-    lazy = false,
   },
   {
     "NvChad/NvChad",
@@ -10,18 +27,34 @@ return {
     import = "nvchad.plugins",
   },
   {
+    "ldelossa/nvim-dap-projects",
+  },
+  {
     'mrcjkb/rustaceanvim',
     version = '^5', -- Recommended
     lazy = false,   -- This plugin is already lazy
-    ["rust-analyzer"] = {
-      cargo = {
-        allFeature = true,
+    ft = "rust",
+    config = function()
+    end
+  },
+  {
+    'saecki/crates.nvim',
+    tag = 'stable',
+    event = { "BufRead Cargo.toml" },
+    config = function()
+      require("crates").setup {
+        completion = {
+          cmp = {
+            enabled = true
+          },
+        },
       }
-    }
+    end,
   },
   -- Add nvim-cmp and dependencies
   {
     "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
     dependencies = {
       "hrsh7th/cmp-buffer",       -- Buffer completions
       "hrsh7th/cmp-path",         -- Path completions
@@ -55,7 +88,9 @@ return {
           end, { 'i' }),
         }),
         sources = cmp.config.sources({
+          { name = "copilot" },
           { name = "nvim_lsp" },
+          { name = "crates" },
           { name = "luasnip" },
           { name = "buffer" },
           { name = "path" },
@@ -79,50 +114,31 @@ return {
         },
       })
     end
-  }, {
-  "xiyaowong/transparent.nvim",
-  config = function()
-    require("transparent").setup({
-      enable = true,     -- Enable transparency
-      extra_groups = {   -- Additional groups to clear (optional)
-        "NormalFloat",   -- Floating windows
-        "NvimTreeNormal" -- Example for NvimTree
-      },
-      exclude = {},      -- Exclude specific groups from clearing
-    })
-  end,
-},
-  {
-    "williamboman/mason.nvim",
-    config = true,
   },
   {
-    "williamboman/mason-lspconfig.nvim",
-    dependencies = {
-      "williamboman/mason.nvim",
-      "neovim/nvim-lspconfig"
-    },
+    "xiyaowong/transparent.nvim",
+    event = "VimEnter",
+    config = function()
+      require("transparent").setup({
+        enable = true,      -- Enable transparency
+        extra_groups = {    -- Additional groups to clear (optional)
+          "NormalFloat",    -- Floating windows
+          "NvimTreeNormal", -- Example for NvimTree
+          "NvimTreeNormalNC",
+          "NvimTreeEndOfBuffer",
+        },
+        exclude = {}, -- Exclude specific groups from clearing
+      })
+    end,
   },
-  {
-    'stevearc/conform.nvim',
-    opts = {},
-  },
-
   {
     "stevearc/conform.nvim",
-    -- event = 'BufWritePre', -- uncomment for format on save
-    opts = require "configs.conform",
+    event = "VeryLazy",
+    opts = {},
   },
   {
     "terryma/vim-expand-region",
-    event = 'BufRead',
-  },
-  -- These are some examples, uncomment them if you want to see them work!
-  {
-    "neovim/nvim-lspconfig",
-    config = function()
-      require "configs.lspconfig"
-    end,
+    event = "VeryLazy",
   },
   {
     "nvim-treesitter/nvim-treesitter",
@@ -136,7 +152,58 @@ return {
   },
   {
     "ThePrimeagen/harpoon",
+    lazy = true,
+    keys = {
+      { "<C-e>", function() require("harpoon.ui").toggle_quick_menu() end, desc = "Harpoon Quick Menu" },
+    },
+    config = function()
+      local harpoon = require("harpoon")
+      harpoon:setup()
+      vim.keymap.set("n", "<leader>a", function() harpoon:list():add() end)
+      vim.keymap.set("n", "<C-e>", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end)
+      vim.keymap.set("n", "<C-S-P>", function() harpoon:list():prev() end)
+      vim.keymap.set("n", "<C-S-N>", function() harpoon:list():next() end)
+    end,
     branch = "harpoon2",
+    cmd = { "Harpoon", "HarpoonAdd", "HarpoonToggle", "HarpoonQuickMenu" },
     dependencies = { "nvim-lua/plenary.nvim" }
+  },
+  {
+    "nvim-tree/nvim-tree.lua",
+    -- Lazy-load on these commands
+    cmd = { "NvimTreeToggle", "NvimTreeFocus" },
+    config = function()
+      require("nvim-tree").setup({
+        view = {
+          side = "right",
+          float = {
+            enable = false,
+          },
+        },
+      })
+    end,
+  },
+  {
+    "saecki/crates.nvim",
+    -- Lazy-load when opening a file of type 'toml'
+    ft = "toml",
+    config = function()
+      require("crates").setup({
+        completion = {
+          crates = {
+            enabled = true,
+          },
+        },
+        -- other settings can be added here...
+      })
+    end,
+  },
+  {
+    "williamboman/mason.nvim",
+    lazy = true,
+    event = "LspAttach", -- Load only when LSP attaches to a buffer
+    config = function()
+      require("mason").setup()
+    end,
   }
 }

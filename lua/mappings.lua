@@ -10,8 +10,19 @@ local opts = { noremap = true, silent = true }
 
 
 
--- Use the system clipboard
-vim.o.clipboard = 'unnamedplus'
+vim.g.clipboard = {
+  name = 'win32yank',
+  copy = {
+    ["+"] = 'win32yank -i --crlf',
+    ["*"] = 'win32yank -i --crlf',
+  },
+  paste = {
+    ["+"] = 'win32yank -o --lf',
+    ["*"] = 'win32yank -o --lf',
+  },
+  cache_enabled = 0,
+}
+map("n", ";", ":", { desc = "CMD enter command mode" })
 
 -- Move cursor and select down
 vim.api.nvim_set_keymap('v', '<S-j>', 'j', opts)
@@ -52,6 +63,7 @@ vim.api.nvim_set_keymap('n', '<leader>bn', ':bnext<CR>', { noremap = true, silen
 vim.api.nvim_set_keymap('n', '<leader>bp', ':bprevious<CR>', { noremap = true, silent = true })
 
 vim.keymap.set('n', '<C-j>', vim.diagnostic.open_float, { desc = "Show diagnostic message" })
+
 -- For hover documentation
 vim.keymap.set('n', '<leader>df', vim.lsp.buf.hover, { desc = 'definition hover' })
 
@@ -60,27 +72,80 @@ vim.keymap.set('i', '<C-s>', vim.lsp.buf.signature_help, { desc = 'Signature Hel
 
 vim.keymap.set('n', '<C-s>', vim.lsp.buf.signature_help, { desc = 'Signature Help' })
 
-vim.api.nvim_set_keymap('n', '<C-w>', '<Plug>(expand_region_expand)', {})
-vim.api.nvim_set_keymap('v', '<C-w>', '<Plug>(expand_region_expand)', {})
-vim.api.nvim_set_keymap('x', '<C-w>', '<Plug>(expand_region_expand)', {})
 
-vim.api.nvim_set_keymap('v', '<C-S-w>', '<Plug>(expand_region_shrink)', {})
-vim.api.nvim_set_keymap('x', '<C-S-w>', '<Plug>(expand_region_shrink)', {})
 
-local harpoon = require("harpoon")
+vim.keymap.set('n', '<C-w>', '<Plug>(expand_region_expand)', { remap = true })
+vim.keymap.set('v', '<C-w>', '<Plug>(expand_region_expand)', { remap = true })
+vim.keymap.set('x', '<C-w>', '<Plug>(expand_region_expand)', { remap = true })
 
--- REQUIRED
-harpoon:setup()
--- REQUIRED
+vim.keymap.set('v', '<C-S-w>', '<Plug>(expand_region_shrink)', { remap = true })
+vim.keymap.set('x', '<C-S-w>', '<Plug>(expand_region_shrink)', { remap = true })
 
-vim.keymap.set("n", "<leader>a", function() harpoon:list():add() end)
-vim.keymap.set("n", "<C-e>", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end)
 
--- vim.keymap.set("n", "<C-h>", function() harpoon:list():select(1) end)
--- vim.keymap.set("n", "<C-t>", function() harpoon:list():select(2) end)
--- vim.keymap.set("n", "<C-n>", function() harpoon:list():select(3) end)
--- vim.keymap.set("n", "<C-s>", function() harpoon:list():select(4) end)
 
--- Toggle previous & next buffers stored within Harpoon list
-vim.keymap.set("n", "<C-S-P>", function() harpoon:list():prev() end)
-vim.keymap.set("n", "<C-S-N>", function() harpoon:list():next() end)
+if vim.fn.argc() == 1 then
+  local arg = vim.fn.argv(0)
+  local stat = vim.loop.fs_stat(arg)
+  if stat and stat.type == "directory" then
+    require("nvim-tree.api").tree.toggle({ find_file = true, open = true })
+  end
+end
+-- local function apply_import_actions(diagnostics, index)
+--   -- Base case: stop if we've processed all diagnostics
+--   if index > #diagnostics then
+--     return
+--   end
+--
+--   local diag = diagnostics[index]
+--   local bufnr = vim.api.nvim_get_current_buf()
+--   local params = {
+--     range = diag.range,
+--     context = {
+--       diagnostics = { diag },
+--     },
+--   }
+--
+--   -- Request code actions for the diagnostic
+--   vim.lsp.buf_request(bufnr, 'textDocument/codeAction', params, function(err, result, ctx)
+--     if err then
+--       -- If there's an error, move to the next diagnostic
+--       apply_import_actions(diagnostics, index + 1)
+--       return
+--     end
+--
+--     if result and #result > 0 then
+--       for _, action in ipairs(result) do
+--         -- Look for an action that adds an import
+--         if string.find(action.title, "Import") then
+--           if action.edit then
+--             vim.lsp.util.apply_workspace_edit(action.edit, "utf-8")
+--           elseif action.command then
+--             vim.lsp.buf.execute_command(action.command)
+--           end
+--           break -- Apply the first import action and move on
+--         end
+--       end
+--     end
+--
+--     -- Process the next diagnostic
+--     apply_import_actions(diagnostics, index + 1)
+--   end)
+-- end
+--
+-- function auto_import()
+--   local bufnr = vim.api.nvim_get_current_buf()
+--   local diagnostics = vim.diagnostic.get(bufnr)
+--   local unresolved_diagnostics = {}
+--
+--   -- Filter diagnostics related to unresolved names
+--   for _, diag in ipairs(diagnostics) do
+--     if string.find(diag.message, "cannot find") or string.find(diag.message, "unresolved") then
+--       table.insert(unresolved_diagnostics, diag)
+--     end
+--   end
+--
+--   -- Start processing diagnostics from the first one
+--   apply_import_actions(unresolved_diagnostics, 1)
+-- end
+
+-- vim.api.nvim_buf_set_keymap(0, 'n', '<leader>oi', '<cmd>lua auto_import()<cr>', { noremap = true, silent = true })
