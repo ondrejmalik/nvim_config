@@ -80,7 +80,7 @@ lspconfig.omnisharp.setup({
   enable_roslyn_analyzers = true,
 })
 
-local harpoon = require('harpoon')
+harpoon = require('harpoon')
 harpoon:setup({})
 
 local conf = require("telescope.config").values
@@ -299,3 +299,4 @@ vim.api.nvim_create_autocmd('BufWritePost', {
   pattern = { '*' },
   command = 'redrawstatus',
 })
+require('telescope').load_extension('projects')

@@ -28,37 +28,52 @@ local function define_colors()
     numhl = "DapLogPoint",
   })
 end
-
 local function setup_default_configurations()
   local dap = require "dap"
 
-  if vim.bo.filetype == "rust" then
-    local lldb_configuration = {
-      {
-        name = "Launch",
-        type = "codelldb",
-        request = "launch",
-        program = function()
-          return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
-        end,
-        cwd = "${workspaceFolder}",
-        stopOnEntry = false,
-        args = {},
-      },
-    }
-    dap.configurations.c = lldb_configuration
-    dap.configurations.cpp = lldb_configuration
-    dap.configurations.rust = lldb_configuration
-    dap.configurations.asm = lldb_configuration
-  else
-  end
+  local lldb_configuration = {
+    {
+      name = "Launch",
+      type = "codelldb",
+      request = "launch",
+      program = function()
+        return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
+      end,
+      cwd = "${workspaceFolder}",
+      stopOnEntry = false,
+      args = {},
+    },
+  }
+
+  local netcoredbg_configuration = {
+    {
+      type = "coreclr",
+      name = "Launch .NET Core",
+      request = "launch",
+      program = function()
+        return vim.fn.input("Path to DLL: ", vim.fn.getcwd() .. "/bin/Debug/net9.0/", "file")
+      end,
+    },
+  }
+
+  dap.configurations.c = lldb_configuration
+  dap.configurations.cpp = lldb_configuration
+  dap.configurations.rust = lldb_configuration
+  dap.configurations.asm = lldb_configuration
+  dap.configurations.cs = netcoredbg_configuration
+
+  dap.adapters.coreclr = {
+    type = "executable",
+    command = "C:/Program Files/netcoredbg/netcoredbg.exe",
+    args = { "--interpreter=vscode" },
+  }
 end
+
 
 return {
   "mfussenegger/nvim-dap",
   lazy = true,
   dependencies = {
-    { 'nicholasmata/nvim-dap-cs', dependencies = { 'mfussenegger/nvim-dap' } },
     {
       "folke/edgy.nvim",
       lazy = true,
@@ -89,7 +104,6 @@ return {
     },
   },
   config = function()
-    require('dap-cs').setup()
     local dap = require "dap"
     local dapui = require "dapui"
     dapui.setup()

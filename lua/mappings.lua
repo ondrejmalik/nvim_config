@@ -82,7 +82,6 @@ vim.keymap.set('v', '<C-S-w>', '<Plug>(expand_region_shrink)', { remap = true })
 vim.keymap.set('x', '<C-S-w>', '<Plug>(expand_region_shrink)', { remap = true })
 
 
-
 if vim.fn.argc() == 1 then
   local arg = vim.fn.argv(0)
   local stat = vim.loop.fs_stat(arg)

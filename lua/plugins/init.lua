@@ -1,4 +1,17 @@
 return {
+  {
+    "ahmedkhalf/project.nvim",
+    config = function()
+      require("project_nvim").setup {}
+    end
+  },
+  {
+    "aznhe21/actions-preview.nvim",
+    lazy = false,
+    config = function()
+      vim.keymap.set({ "v", "n" }, "<leader>gf", require("actions-preview").code_actions)
+    end,
+  },
   { 'akinsho/toggleterm.nvim', version = "*", config = true },
   {
     event = "VeryLazy",
@@ -98,14 +111,16 @@ return {
         window = {
           completion = cmp.config.window.bordered({
             focusable = false,
-            winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:Visual,Search:None",
+            winhighlight =
+            "Normal:Normal,FloatBorder:FloatBorder,CursorLine:Visual,Search:None",
             -- Other window options...
           }),
           documentation = {
             focusable = false,
             border = 'rounded',
             -- Force the window to stay open even when losing focus
-            winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:Visual,Search:None",
+            winhighlight =
+            "Normal:Normal,FloatBorder:FloatBorder,CursorLine:Visual,Search:None",
           },
         },
         preselect = cmp.PreselectMode.None,
